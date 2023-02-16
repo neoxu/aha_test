@@ -1,0 +1,20 @@
+<div class="register app-pages app-section">
+    <div class="container">
+        <div class="pages-title">
+            <h3>Please validate Email yor signup</h3>
+        </div>
+        <form action="email-confirm" method="post">
+            <input type="text" name="code" placeholder="Validation Code">
+            <button class="button">Validate</button>
+            <strong class="login-now">Your already validated? <a href="login">Login now</a></strong>
+            <% if (locals.RecMessage) { %>
+                <input type="email" name="email" placeholder="Email" value="<%= RecMessage %>" style="visibility: hidden">
+            <% } %>
+        </form>
+        <br>
+        <% if (locals.RecMessage) { %>
+            <br>
+            <div class="well well-lg"><%= RecMessage %></div>
+        <% } %>
+    </div>
+</div>

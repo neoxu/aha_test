@@ -1,0 +1,29 @@
+<div class="register app-pages app-section">
+	<div class="container">
+		<div class="pages-title">
+			<h3>Account Profile</h3>
+		</div>
+		<form action="update-profile" method="post">
+			<input type="text" name="name" placeholder="Name" value=<%= locals.name %>>
+			<button class="button">Update</button>
+		</form>
+
+		<div class="or">
+			<h5>OR</h5>
+			<h3>Reset Password</h3>
+		</div>
+
+		<form action="reset-password" method="post">
+			<input type="password" name="oldPassword" placeholder="Old password">
+			<input type="password" name="newPassword" placeholder="New password">
+			<input type="password" name="confirm" placeholder="Re-enter new password" >
+			<button class="button">Reset</button>
+		</form>
+
+		<br>
+		<% if (locals.RecMessage) { %>
+			<br>
+			<div class="well well-lg"><%= RecMessage %></div>
+		<% } %>
+	</div>
+</div>
