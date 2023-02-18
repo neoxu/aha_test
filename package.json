@@ -15,6 +15,9 @@
     "mongodb": "^2.2.11",
     "mysql": "^2.18.1",
     "nodemailer": "^0.7.1",
+    "passport": "^0.6.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
     "randomstring": "^1.1.5"
   }
 }

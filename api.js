@@ -5,11 +5,11 @@ const nodeMailer = require('nodemailer');
 const randomString = require("randomstring");
 const cryptoJS = require("crypto-js");
 
-const TABLE_ACCOUNT = 'account';
-
 const QUERY_SELECT_ONE = 'SELECT * FROM account where %s = "%s";';
 const QUERY_FIELD_EXIST = 'SELECT EXISTS (SELECT * FROM account where %s = "%s") as RESULT;';
-const QUERY_INSERT_ACCOUNT = 'INSERT INTO account (email, password, validated) VALUES (\'%s\', \'%s\', %d)';
+const QUERY_INSERT_ACCOUNT_EMAIL = 'INSERT INTO account (email, password, validated) VALUES (\'%s\', \'%s\', %d)';
+const QUERY_INSERT_ACCOUNT_FB = 'INSERT INTO account (fbId, name) VALUES (\'%s\', \'%s\')';
+const QUERY_INSERT_ACCOUNT_GOOGLE = 'INSERT INTO account (googleId, name) VALUES (\'%s\', \'%s\')';
 const QUERY_UPDATE_VALIDATED = 'UPDATE account SET validated = 1 WHERE %s = "%s";';
 const QUERY_UPDATE_PASSWORD = 'UPDATE account SET password = "%s" WHERE %s = "%s";';
 const QUERY_UPDATE_NAME = 'UPDATE account SET name = "%s" WHERE %s = "%s";';
@@ -28,6 +28,8 @@ const WebPage = {
 const AccountField = {
 	EMAIL: 'email',
 	PASSWORD: 'password',
+	FBID: 'fbId',
+	GOOGLEID: 'googleId',
 }
 
 const hostName = 'localhost:15000';
@@ -70,12 +72,6 @@ function dbQuery(query, callback) {
 	}
 }
 
-function UTCDate() {
-	let now = new Date();
-	return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-		now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds()));
-}
-
 function checkError(err, res, page) {
 	if (!err)
 		return true;
@@ -84,7 +80,7 @@ function checkError(err, res, page) {
 			const clientObj = {title: page, RecMessage: err};
 
 			if (res.req && res.req.session)
-				clientObj.member = res.req.session.member;
+				clientObj.account = res.req.session.account;
 
 			res.render(page, clientObj);
 		}
@@ -93,8 +89,8 @@ function checkError(err, res, page) {
 	}
 }
 
-function checkMember(member, res, page) {
-	if (member != null)
+function checkAccount(account, res, page) {
+	if (account != null)
 		return true;
 	else {
         responseClient(res, page, 'Account not found.');
@@ -111,7 +107,7 @@ function responseClient(res, page, msg) {
 
 	let clientObj = {title: page, RecMessage: msg};
     if (res.req && res.req.session) {
-		clientObj.member = res.req.session.member;
+		clientObj.account = res.req.session.account;
 	}
 
     res.render(page, clientObj);
@@ -143,8 +139,19 @@ function parseURL(url, data) {
 	return false;
 }
 
+function updateName(res, req, name, fieldName, fieldValue) {
+	let query = format(QUERY_UPDATE_NAME, name, fieldName, fieldValue);
+	dbQuery(query, function (err, result2) {
+		if (checkError(err, res, WebPage.MY_ACCOUNT)) {
+			req.session.account.name = req.body.name;
+			responseClient(res, WebPage.MY_ACCOUNT, 'Update profile success.');
+		} else
+			responseClient(res, WebPage.MY_ACCOUNT, err);
+	});
+}
+
 exports.index = function(req, res) {
-	if (req.session.member)
+	if (req.session.account)
     	responseClient(res, WebPage.MY_ACCOUNT);
 	else
 		responseClient(res, WebPage.SIGNUP);
@@ -156,11 +163,11 @@ exports.login = function(req, res) {
 
 		dbQuery(query, function(err, result) {
 			if (checkError(err, res, WebPage.LOGIN) && result && result.length > 0) {
-				let member = result[0];
+				let account = result[0];
 
-				if (member.password == req.body.password) {
-                    if (member.validated) {
-                        req.session.member = member;
+				if (account.password == req.body.password) {
+                    if (account.validated) {
+                        req.session.account = account;
                         responseClient(res, WebPage.MY_ACCOUNT);
                     } else { //Resend validation email.
 						let clientObj = {
@@ -169,7 +176,7 @@ exports.login = function(req, res) {
 							RecMessage: 'Please validate Email.'
 						};
 						if (res.req && res.req.session)
-							clientObj.member = res.req.session.member;
+							clientObj.account = res.req.session.account;
 
 						res.render(WebPage.LOGIN, clientObj);
 					}
@@ -190,7 +197,7 @@ exports.signUp = function(req, res) {
 				dbQuery(query, function (err, result) {
 					if (checkError(err, res, WebPage.SIGNUP)) {
 						if (result != null && result.length > 0 && !result[0].RESULT) {
-							let query2 = format(QUERY_INSERT_ACCOUNT, req.body.email, req.body.password, 0);
+							let query2 = format(QUERY_INSERT_ACCOUNT_EMAIL, req.body.email, req.body.password, 0);
 
 							dbQuery(query2, function (err, result2) {
 								if (checkError(err, res, WebPage.LOGIN)) {
@@ -240,8 +247,8 @@ exports.emailConfirm = function(req, res) {
 
 					dbQuery(query, function(err, result) {
 						if (checkError(err, res, WebPage.EMAIL_CONFIRM)) {
-							let member = {email: email};
-							req.session.member = member;
+							let account = {email: email};
+							req.session.account = account;
 							responseClient(res, WebPage.MY_ACCOUNT);
 						}
 					});
@@ -280,22 +287,22 @@ exports.resendValidation = function(req, res) {
 
 exports.resetPassword = function(req, res) {
 	if (req.body.oldPassword && req.body.newPassword && req.body.confirm) {
-		if (req.session.member.password == req.body.oldPassword) {
+		if (req.session.account.password == req.body.oldPassword) {
 			if (req.body.newPassword != req.body.oldPassword) {
 				if (req.body.newPassword == req.body.confirm) {
 					if (validatePassword(req.body.newPassword)) {
-						if (req.session.member) {
-							if (req.session.member.email) {
-								let query = format(QUERY_FIELD_EXIST, AccountField.EMAIL, req.session.member.email);
+						if (req.session.account) {
+							if (req.session.account.email) {
+								let query = format(QUERY_FIELD_EXIST, AccountField.EMAIL, req.session.account.email);
 
 								dbQuery(query, function (err, result) {
 									if (checkError(err, res, WebPage.MY_ACCOUNT)) {
 										if (result != null && result.length > 0 && result[0].RESULT) {
-											let query2 = format(QUERY_UPDATE_PASSWORD, req.body.newPassword, AccountField.EMAIL, req.session.member.email);
+											let query2 = format(QUERY_UPDATE_PASSWORD, req.body.newPassword, AccountField.EMAIL, req.session.account.email);
 											dbQuery(query2, function (err, result2) {
 												if (checkError(err, res, WebPage.MY_ACCOUNT)) {
 													responseClient(res, WebPage.MY_ACCOUNT, 'Reset password success.');
-													req.session.member.password = req.body.newPassword;
+													req.session.account.password = req.body.newPassword;
 												} else
 													responseClient(res, WebPage.MY_ACCOUNT, err);
 											});
@@ -320,20 +327,26 @@ exports.resetPassword = function(req, res) {
 
 exports.updateProfile = function(req, res) {
 	if (req.body.name) {
-		if (req.session.member) {
-			if (req.session.member.email) {
-				let query = format(QUERY_FIELD_EXIST, AccountField.EMAIL, req.session.member.email);
+		if (req.session.account) {
+			if (req.session.account.email) { //login by email
+				let query = format(QUERY_FIELD_EXIST, AccountField.EMAIL, req.session.account.email);
 
 				dbQuery(query, function (err, result) {
 					if (checkError(err, res, WebPage.MY_ACCOUNT)) {
 						if (result != null && result.length > 0 && result[0].RESULT) {
-							let query2 = format(QUERY_UPDATE_NAME, req.body.name, AccountField.EMAIL, req.session.member.email);
-							dbQuery(query2, function (err, result2) {
-								if (checkError(err, res, WebPage.MY_ACCOUNT)) {
-									responseClient(res, WebPage.MY_ACCOUNT, 'Update profile success.');
-								} else
-									responseClient(res, WebPage.MY_ACCOUNT, err);
-							});
+							updateName(res, req, req.body.name, AccountField.EMAIL, req.session.account.email);
+						} else
+							responseClient(res, WebPage.MY_ACCOUNT, 'Please login first.');
+					}
+				});
+			} else
+			if (req.session.account.fbId) {
+				let query = format(QUERY_FIELD_EXIST, AccountField.FBID, req.session.account.fbId);
+
+				dbQuery(query, function (err, result) {
+					if (checkError(err, res, WebPage.MY_ACCOUNT)) {
+						if (result != null && result.length > 0 && result[0].RESULT) {
+							updateName(res, req, req.body.name, AccountField.FBID, req.session.account.fbId);
 						} else
 							responseClient(res, WebPage.MY_ACCOUNT, 'Please login first.');
 					}
@@ -347,8 +360,67 @@ exports.updateProfile = function(req, res) {
 }
 
 exports.logout = function(req, res) {
-	if (req.session.member)
-		delete req.session.member;
+	if (req.session.account)
+		delete req.session.account;
 
-	relogin('', res);
+	relogin('Logout', res);
 }
+
+exports.authCallback = function(accessToken, refreshToken, profile, done) {
+	process.nextTick(function () {
+		return done(null, profile);
+	});
+}
+
+exports.fbLoginSuccess = function(req, res) {
+	if (req.user) {
+		console.log(req.user);
+		let query = format(QUERY_SELECT_ONE, AccountField.FBID, req.user.id);
+
+		dbQuery(query, function(err, result) {
+			if (checkError(err, res, WebPage.LOGIN)) {
+				if (result && result.length > 0) {
+					res.req.session.account = result[0];
+					responseClient(res, WebPage.MY_ACCOUNT, 'FB login success.');
+				} else { //insert a new account
+					let query2 = format(QUERY_INSERT_ACCOUNT_FB, req.user.id, req.user.displayName);
+
+					dbQuery(query2, function (err, result2) {
+						if (checkError(err, res, WebPage.LOGIN)) {
+							res.req.session.account = {fbId: req.user.id, name: req.user.displayName};
+							responseClient(res, WebPage.MY_ACCOUNT, 'FB login success.');
+						}
+					});
+				}
+			}
+		});
+	}
+}
+
+exports.googleLoginSuccess = function(req, res) {
+	if (req.user) {
+		console.log(req.user);
+		let query = format(QUERY_SELECT_ONE, AccountField.GOOGLEID, req.user.id);
+
+		dbQuery(query, function(err, result) {
+			if (checkError(err, res, WebPage.LOGIN)) {
+				if (result && result.length > 0) {
+					res.req.session.account = result[0];
+					responseClient(res, WebPage.MY_ACCOUNT, 'Google login success.');
+				} else { //insert a new account
+					let query2 = format(QUERY_INSERT_ACCOUNT_GOOGLE, req.user.id, req.user.displayName);
+
+					dbQuery(query2, function (err, result2) {
+						if (checkError(err, res, WebPage.LOGIN)) {
+							res.req.session.account = {googleId: req.user.id, name: req.user.displayName};
+							responseClient(res, WebPage.MY_ACCOUNT, 'Google login success.');
+						}
+					});
+				}
+			}
+		});
+	}
+}
+
+
+

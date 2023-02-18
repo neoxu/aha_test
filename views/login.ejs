@@ -20,8 +20,13 @@
 
         <div class="or">
             <h5>OR</h5>
-            <button class="button facebook">Login with Facebook</button>
-            <button class="button google">Login with Google</button>
+            <form action="auth/facebook" method="get">
+                <button class="button facebook">Login with Facebook</button>
+            </form>
+
+            <form action="auth/google" method="get">
+                <button class="button google">Login with Google</button>
+            </form>
         </div>
         <% if (locals.RecMessage) { %>
             <br>

@@ -3,6 +3,9 @@ const path = require('path'),
     partials = require('express-partials'),
     api = require('./api'),
     app = express(),
+    passport = require('passport'),
+    fb = require('./fb'),
+    google = require('./google'),
     port = 15000;
 
 // all environments
@@ -19,11 +22,17 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// development only
+//development only
 if ('development' === app.get('env')) {
     app.use(express.logger('dev'));
     app.use(express.errorHandler());
 }
+
+//fb setting
+fb.setting(app, api, passport);
+
+//google setting
+google.setting(app, api, passport);
 
 //web
 app.get('/', api.index);

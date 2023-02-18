@@ -4,7 +4,7 @@
 			<h3>Account Profile</h3>
 		</div>
 		<form action="update-profile" method="post">
-			<input type="text" name="name" placeholder="Name" value=<%= locals.name %>>
+			<input type="text" name="name" placeholder="Name" value=<%= locals.account.name %>>
 			<button class="button">Update</button>
 		</form>
 
@@ -18,6 +18,14 @@
 			<input type="password" name="newPassword" placeholder="New password">
 			<input type="password" name="confirm" placeholder="Re-enter new password" >
 			<button class="button">Reset</button>
+		</form>
+
+		<div class="or">
+			<h5>OR</h5>
+		</div>
+
+		<form action="logout" method="get">
+			<button class="button">Logout</button>
 		</form>
 
 		<br>
