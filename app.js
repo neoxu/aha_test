@@ -15,7 +15,7 @@ app.set('view engine', 'ejs');
 app.use(express.bodyParser());
 app.use(partials());
 app.use(express.cookieParser());
-app.use(express.session({secret: '123456789abcdefg'}));
+app.use(express.session({secret: '123456789abcdefg', cookie: { maxAge: 7 * 24 * 60 * 60000 }}));
 app.use(express.favicon());
 app.use(express.json());
 app.use(express.urlencoded());

@@ -1,0 +1,56 @@
+<div class="container-fluid">
+  <% if(locals.accounts) { %>
+  <div class="row-fluid">
+    <div class="span12">
+      <table class="table">
+        <thead>
+        <tr>
+          <th>
+            Email
+          </th>
+          <th>
+            FB ID
+          </th>
+          <th>
+            Google ID
+          </th>
+          <th>
+            Sign Up Timestamp
+          </th>
+          <th>
+            Session Timestamp
+          </th>
+          <th>
+            Logged In Count
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        <% for (var i = 0; i < locals.accounts.length; i++) { %>
+        <tr>
+          <td>
+            <%= locals.accounts[i].email %>
+          </td>
+          <td>
+            <%= locals.accounts[i].fbId %>
+          </td>
+          <td>
+            <%= locals.accounts[i].googleId %>
+          </td>
+          <td>
+            <%= locals.accounts[i].createTime %>
+          </td>
+          <td>
+            <%= locals.accounts[i].sessionTime %>
+          </td>
+          <td>
+            <%= locals.accounts[i].loggedInCount %>
+          </td>
+        </tr>
+        <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <% } %>
+</div>

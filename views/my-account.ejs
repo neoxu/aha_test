@@ -2,7 +2,11 @@
 	<div class="container">
 		<div class="pages-title">
 			<h3>Account Profile</h3>
+			<% if (locals.account && locals.account.email) { %>
+				<h4><%= locals.account.email %></h4>
+			<% } %>
 		</div>
+
 		<form action="update-profile" method="post">
 			<input type="text" name="name" placeholder="Name" value=<%= locals.account.name %>>
 			<button class="button">Update</button>
