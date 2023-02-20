@@ -35,10 +35,10 @@ const AccountField = {
 	GOOGLEID: 'googleId',
 }
 
-const hostName = 'aha.nicemarket.com.tw';
+const hostName = 'https://aha.nicemarket.com.tw';
 const validateCode = '20230216';
 const validateSubtitle = 'AHA exam from Neo';
-const validateEmail = '<p>For validate your email, please click the link below:</p><p>Validate code %s</p><p>http://%s/email-confirm?email=%s&code=%s</p><br><b>Neo Hsu</b>';
+const validateEmail = '<p>For validate your email, please click the link below:</p><p>Validate code %s</p><p>%s/email-confirm?email=%s&code=%s</p><br><b>Neo Hsu</b>';
 
 // create reusable transporter object using the default SMTP transport
 const mailTransport = nodeMailer.createTransport('SMTP', {

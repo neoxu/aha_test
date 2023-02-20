@@ -8,7 +8,7 @@ exports.setting = function(app, api, passport) {
     passport.use(new facebookStrategy({
             clientID: '746629653449291',
             clientSecret: 'bce3fcde4b5314987a9e34a61452a09e',
-            callbackURL: 'http://aha.nicemarket.com.tw/auth/facebook/callback'
+            callbackURL: 'https://aha.nicemarket.com.tw/auth/facebook/callback'
         },
         api.authCallback
     ));
