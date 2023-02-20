@@ -50,6 +50,7 @@ app.post('/reset-password', api.resetPassword);
 app.get('/update-profile', api.updateProfile);
 app.post('/update-profile', api.updateProfile);
 app.get('/logout', api.logout);
+app.get('/dashboard', api.dashboard);
 
 app.listen(port);
 console.log('Express server listening on port ' + port);

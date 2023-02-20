@@ -14,6 +14,7 @@ const QUERY_UPDATE_LOGIN_TIME = 'UPDATE account SET sessionTime = \'%s\', logged
 const QUERY_UPDATE_VALIDATED = 'UPDATE account SET validated = 1 WHERE %s = "%s";';
 const QUERY_UPDATE_PASSWORD = 'UPDATE account SET password = "%s" WHERE %s = "%s";';
 const QUERY_UPDATE_NAME = 'UPDATE account SET name = "%s" WHERE %s = "%s";';
+const QUERY_ACCOUNTS = 'SELECT * FROM account';
 
 const WebPage = {
 	INDEX: 'index',
@@ -24,6 +25,7 @@ const WebPage = {
 	FORGOT_PASSWORD: 'forgot-password',
 	RESET_PASSWORD: 'reset-password',
 	MY_ACCOUNT: 'my-account',
+	DASHBOARD: 'dashboard'
 }
 
 const AccountField = {
@@ -33,7 +35,7 @@ const AccountField = {
 	GOOGLEID: 'googleId',
 }
 
-const hostName = 'localhost:15000';
+const hostName = 'aha.nicemarket.com.tw';
 const validateCode = '20230216';
 const validateSubtitle = 'AHA exam from Neo';
 const validateEmail = '<p>For validate your email, please click the link below:</p><p>Validate code %s</p><p>http://%s/email-confirm?email=%s&code=%s</p><br><b>Neo Hsu</b>';
@@ -503,7 +505,34 @@ exports.googleLoginSuccess = function(req, res) {
 }
 
 exports.dashboard = function(req, res) {
+	dbQuery(QUERY_ACCOUNTS, function(err, result) {
+		if (checkError(err, res, WebPage.LOGIN) && result != null) {
+			let loginCount = 0;
+			let sessionCount = 0;
+			let today = new Date();
 
+			for (let i = 0; i < result.length; i++) {
+				if (result[i].sessionTime) {
+					let sessionTime = result[i].sessionTime;
+					if (sessionTime.getUTCFullYear() == today.getUTCFullYear() &&
+						sessionTime.getUTCMonth() == today.getUTCMonth() &&
+						sessionTime.getUTCDay() == today.getUTCDay()) {
+						loginCount ++;
+					}
+				}
+			}
+
+			let clientObj = {
+				title: WebPage.DASHBOARD,
+				members: result,
+				totalAccount: result.length,
+				loginCount: loginCount,
+				sessionCount: loginCount,
+			};
+			res.render(WebPage.DASHBOARD, clientObj);
+		} else
+			responseClient(res, WebPage.LOGIN, 'Please check name.');
+	});
 }
 
 
