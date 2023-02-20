@@ -93,7 +93,10 @@ function checkError(err, res, page) {
 }
 
 function padTo2Digits(num) {
-	return num.toString().padStart(2, '0');
+	if (num.length == 1)
+		return '0' + num.toString();
+	else
+		return num.toString();
 }
 
 function formatDate(date) {
