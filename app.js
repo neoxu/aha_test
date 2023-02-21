@@ -14,6 +14,8 @@ let fb = require('./fb');
 let google = require('./google');
 let passport = require('passport');
 let partials = require('express-partials');
+let swaggerUi = require('swagger-ui-express')
+let swaggerFile = require('./swagger-output.json')
 
 let app = express();
 
@@ -35,46 +37,18 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(partials());
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 if (app.get('env') === 'development') {
     app.use(errorHandler())
 }
-
-// const path = require('path'),
-//     express = require('express'),
-//     partials = require('express-partials'),
-//     api = require('./api'),
-//     app = express(),
-//     passport = require('passport'),
-//     fb = require('./fb'),
-//     google = require('./google'),
-//     port = 15000;
-//
-// // all environments
-// app.set('port', port);
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'ejs');
-// app.use(express.bodyParser());
-// app.use(partials());
-// app.use(express.cookieParser());
-// app.use(express.session({secret: '123456789abcdefg', cookie: { maxAge: 7 * 24 * 60 * 60000 }}));
-// app.use(express.favicon());
-// app.use(express.json());
-// app.use(express.urlencoded());
-// app.use(express.methodOverride());
-// app.use(express.static(path.join(__dirname, 'public')));
-//
-// //development only
-// if ('development' === app.get('env')) {
-//     app.use(express.logger('dev'));
-//     app.use(express.errorHandler());
-// }
 
 //fb setting
 fb.setting(app, api, passport);
 
 //google setting
 google.setting(app, api, passport);
+
 
 //web
 app.get('/', api.index);
