@@ -1,9 +1,6 @@
-db = require('./db');
-const url = require('url');
-const format = require('util').format;
-const nodeMailer = require('nodemailer');
-const randomString = require("randomstring");
-const cryptoJS = require("crypto-js");
+let db = require('./db');
+let format = require('util').format;
+let nodeMailer = require('nodemailer');
 
 const QUERY_SELECT_ONE = 'SELECT * FROM account where %s = "%s";';
 const QUERY_FIELD_EXIST = 'SELECT EXISTS (SELECT * FROM account where %s = "%s") as RESULT;';
