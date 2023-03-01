@@ -61,14 +61,17 @@ function dbQuery(query, callback) {
 	{
 		console.log(query);
 		db.connect.query(query, function (err, results, fields) {
-			if (err)
-				callback(err);
-			else
+			if (err) {
+				db.reconnectDB(query, callback);
+			}
+			else {
 				callback(err, results);
+			}
 		});
 	} catch (e) {
 		console.log('dbQuery exception: ' + e);
 		callback(e);
+
 	}
 }
 
