@@ -7,43 +7,16 @@ const dbConfig = {
 	database: "member",
 };
 
-const conn = mysql.createConnection(dbConfig);
+const conn = null;//mysql.createConnection(dbConfig);
 
-conn.connect(function(err) {
-	if (err) {
-		console.log("\n\t *** Cannot establish a connection with the database. ***");
-		this.conn = reconnect(conn);
-	} else {
-		console.log("MySQL connected!");
-	}
-});
-
-//- Error listener
-conn.on('error', function(err) {
-	//- The server close the connection.
-	if (err.code === "PROTOCOL_CONNECTION_LOST") {
-		console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-		this.conn = reconnect(conn);
-	}
-	else //- Connection in closing
-	if (err.code === "PROTOCOL_ENQUEUE_AFTER_QUIT") {
-		console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-		this.conn = reconnect(conn);
-	}
-	else //- Fatal error : connection variable must be recreated
-	if(err.code === "PROTOCOL_ENQUEUE_AFTER_FATAL_ERROR") {
-		console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-		this.conn = reconnect(conn);
-	}
-	else //- Error because a connection is already being established
-	if(err.code === "PROTOCOL_ENQUEUE_HANDSHAKE_TWICE") {
-		console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-	}
-	else { //- Anything else
-		console.log("/!\\ Cannot establish a connection with the database. /!\\ ("+err.code+")");
-		this.conn = reconnect(conn);
-	}
-});
+// conn.connect(function(err) {
+// 	if (err) {
+// 		console.log("\n\t *** Cannot establish a connection with the database. ***");
+// 		this.conn = reconnect(conn);
+// 	} else {
+// 		console.log("MySQL connected!");
+// 	}
+// });
 
 function reconnect(connection, query, callback) {
 	console.log("\n New connection tentative...");
@@ -62,9 +35,9 @@ function reconnect(connection, query, callback) {
 		else {
 			console.log("\n\t *** New connection established with the database. ***")
 			if (query != null && callback != null) {
-				conn.query(query, function (err, results, fields) {
+				connection.query(query, function (err, results, fields) {
 					if (err) {
-						reconnect(conn, query, callback);
+						reconnect(connection, query, callback);
 					}
 					else
 						callback(err, results);
@@ -79,5 +52,5 @@ function reconnect(connection, query, callback) {
 exports.connect = conn;
 
 exports.reconnectDB = function(query, callback) {
-	reconnect(conn, query, callback);
+	this.conn = reconnect(conn, query, callback);
 }
