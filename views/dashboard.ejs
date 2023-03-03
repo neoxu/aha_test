@@ -13,6 +13,8 @@
                   <thead>
                   <tr>
                     <th>Email</th>
+                    <th>FB ID</th>
+                    <th>Google ID</th>
                     <th>Sign Up Time</th>
                     <th>Session Time</th>
                     <th>Login Count</th>
@@ -22,6 +24,8 @@
                   <% for (var i = 0; i < locals.members.length; i++) { %>
                     <tr>
                       <td><%= locals.members[i].email %></td>
+                      <td><%= locals.members[i].fbId %></td>
+                      <td><%= locals.members[i].googleId %></td>
                       <td><%= locals.members[i].createTime %></td>
                       <td><%= locals.members[i].sessionTime %></td>
                       <td><%= locals.members[i].loggedInCount %></td>

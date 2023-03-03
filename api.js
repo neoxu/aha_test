@@ -241,6 +241,7 @@ exports.login = function(req, res) {
 							validated: req.body.email,
 							RecMessage: 'Please validate Email.'
 						};
+
 						if (res.req && res.req.session)
 							clientObj.account = res.req.session.account;
 
@@ -437,7 +438,6 @@ exports.logout = function(req, res) {
 		})
 	}
 
-
 	relogin('Logout', res);
 }
 
@@ -526,7 +526,12 @@ exports.dashboard = function(req, res) {
 						sessionTime.getUTCDay() == today.getUTCDay()) {
 						loginCount ++;
 					}
+
+					result[i].sessionTime = formatDate(result[i].sessionTime);
 				}
+
+				if (result[i].createTime)
+					result[i].createTime = formatDate(result[i].createTime);
 			}
 
 			let clientObj = {
